@@ -57,3 +57,6 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
+# Kiro IDE
+.kiro/
+
