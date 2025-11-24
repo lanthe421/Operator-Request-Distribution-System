@@ -48,6 +48,7 @@ crm.db
 .coverage
 htmlcov/
 .hypothesis/
+.kiro/
 
 # Logs
 *.log
@@ -56,4 +57,3 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
-.kiro
