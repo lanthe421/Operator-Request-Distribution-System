@@ -13,7 +13,25 @@
 
 ## 🚀 Быстрый старт
 
-### Установка
+### Вариант 1: Docker (рекомендуется)
+
+```bash
+# Клонировать репозиторий
+git clone <repository-url>
+cd operator-request-distribution
+
+# Запустить с Docker Compose
+docker-compose up -d
+
+# Проверить статус
+docker-compose logs -f
+```
+
+Сервер будет доступен по адресу: **http://localhost:8000**
+
+📖 Подробнее: [DOCKER_GUIDE.md](DOCKER_GUIDE.md)
+
+### Вариант 2: Локальная установка
 
 ```bash
 # Клонировать репозиторий
@@ -209,6 +227,7 @@ pytest tests/property/ -v
 - **Hypothesis** - property-based testing
 - **pytest** - тестирование
 - **SQLite** - база данных (легко заменить на PostgreSQL)
+- **Docker** - контейнеризация приложения
 
 ## 📚 API Endpoints
 
@@ -252,6 +271,36 @@ PORT=8000
 - Индекс на `operator_source_weights(source_id)`
 - Композитный индекс на `requests(operator_id, source_id, status)`
 - Индекс на `users(identifier)`
+
+## 🐳 Docker
+
+### Быстрый запуск
+
+```bash
+# Запустить
+docker-compose up -d
+
+# Остановить
+docker-compose down
+
+# Логи
+docker-compose logs -f
+```
+
+### Команды внутри контейнера
+
+```bash
+# Применить миграции
+docker-compose exec app alembic upgrade head
+
+# Запустить тесты
+docker-compose exec app pytest -v
+
+# Открыть bash
+docker-compose exec app bash
+```
+
+📖 Полное руководство: [DOCKER_GUIDE.md](DOCKER_GUIDE.md)
 
 ## 🤝 Разработка
 

@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: operator-request-distribution
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./crm.db:/app/crm.db
+    environment:
+      - DATABASE_URL=sqlite:///./crm.db
+      - API_V1_PREFIX=/api/v1
+      - DEBUG=False
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
