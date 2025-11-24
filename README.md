@@ -10,34 +10,54 @@
 - 🔄 **Гибкая настройка** - разные веса для разных источников обращений
 - 📈 **Статистика в реальном времени** - мониторинг загрузки и распределения
 - 🧪 **Property-Based Testing** - тестирование с использованием Hypothesis для гарантии корректности
+- 🐳 **Docker Ready** - готовая конфигурация для запуска в контейнере
 
 ## 🚀 Быстрый старт
 
 ### Вариант 1: Docker (рекомендуется)
 
-```bash
-# Клонировать репозиторий
-git clone <repository-url>
-cd operator-request-distribution
+**Требования:**
+- Docker Desktop для Windows
+- 2 GB свободного места
 
-# Запустить с Docker Compose
+**Установка Docker:**
+1. Скачайте Docker Desktop: https://www.docker.com/products/docker-desktop
+2. Установите и запустите Docker Desktop
+3. Дождитесь запуска Docker Engine
+
+**Запуск проекта:**
+
+```powershell
+# Собрать образ
+docker-compose build
+
+# Запустить контейнер
 docker-compose up -d
 
 # Проверить статус
+docker-compose ps
+
+# Посмотреть логи
 docker-compose logs -f
 ```
 
 Сервер будет доступен по адресу: **http://localhost:8000**
 
-📖 Подробнее: [DOCKER_GUIDE.md](DOCKER_GUIDE.md)
+**Автоматическое тестирование Docker:**
+```powershell
+# Запустить тестовый скрипт (проверит установку, соберет, запустит и протестирует)
+.\test_docker.ps1
+```
 
 ### Вариант 2: Локальная установка
 
-```bash
-# Клонировать репозиторий
-git clone <repository-url>
-cd operator-request-distribution
+**Требования:**
+- Python 3.11+
+- pip
 
+**Установка:**
+
+```bash
 # Установить зависимости
 pip install -r requirements.txt
 
@@ -50,9 +70,12 @@ python main.py
 
 Сервер будет доступен по адресу: **http://localhost:8000**
 
-### Интерактивная документация
+### 📖 Интерактивная документация
 
-Откройте в браузере: **http://localhost:8000/docs**
+После запуска откройте в браузере:
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+- **Health Check**: http://localhost:8000/health
 
 ## 📖 Использование
 
@@ -200,34 +223,42 @@ pytest tests/property/ -v
 ```
 .
 ├── app/
-│   ├── api/v1/          # API endpoints
-│   ├── models/          # SQLAlchemy модели
-│   ├── schemas/         # Pydantic схемы
-│   ├── services/        # Бизнес-логика
-│   ├── repositories/    # Доступ к данным
-│   ├── core/            # Конфигурация
-│   └── utils/           # Утилиты
+│   ├── api/v1/          # API endpoints (operators, sources, requests, stats)
+│   ├── models/          # SQLAlchemy модели (Operator, Source, Request, User)
+│   ├── schemas/         # Pydantic схемы для валидации
+│   ├── services/        # Бизнес-логика (DistributionService)
+│   ├── repositories/    # Доступ к данным (Repository pattern)
+│   ├── core/            # Конфигурация (database, settings)
+│   └── utils/           # Утилиты (weighted_random)
 ├── tests/
 │   ├── unit/            # Unit тесты
 │   ├── integration/     # Integration тесты
-│   └── property/        # Property-based тесты
+│   └── property/        # Property-based тесты (Hypothesis)
 ├── alembic/             # Миграции БД
-├── .kiro/specs/         # Спецификации
-├── main.py              # Точка входа
-├── requirements.txt     # Зависимости
-└── README.md
+│   └── versions/        # История миграций
+├── .kiro/specs/         # Спецификации проекта
+├── docker-compose.yml   # Docker Compose конфигурация
+├── Dockerfile           # Docker образ
+├── main.py              # Точка входа приложения
+├── requirements.txt     # Python зависимости
+├── test_docker.ps1      # Скрипт тестирования Docker (Windows)
+├── test_docker.sh       # Скрипт тестирования Docker (Linux/Mac)
+├── quick_demo.py        # Быстрая демонстрация
+├── show_status.py       # Показать статус системы
+└── README.md            # Документация
 ```
 
 ## 🛠️ Технологии
 
-- **FastAPI** - современный веб-фреймворк
-- **SQLAlchemy** - ORM для работы с БД
-- **Alembic** - миграции базы данных
-- **Pydantic** - валидация данных
-- **Hypothesis** - property-based testing
-- **pytest** - тестирование
+- **FastAPI 0.104.1** - современный веб-фреймворк
+- **SQLAlchemy 2.0.23** - ORM для работы с БД
+- **Alembic 1.12.1** - миграции базы данных
+- **Pydantic 2.5.0** - валидация данных
+- **Hypothesis 6.92.1** - property-based testing
+- **pytest 7.4.3** - тестирование
 - **SQLite** - база данных (легко заменить на PostgreSQL)
-- **Docker** - контейнеризация приложения
+- **Docker & Docker Compose** - контейнеризация приложения
+- **Uvicorn** - ASGI сервер
 
 ## 📚 API Endpoints
 
@@ -274,33 +305,90 @@ PORT=8000
 
 ## 🐳 Docker
 
-### Быстрый запуск
+### Управление контейнером
 
-```bash
+```powershell
 # Запустить
 docker-compose up -d
 
 # Остановить
 docker-compose down
 
-# Логи
+# Перезапустить
+docker-compose restart
+
+# Статус
+docker-compose ps
+
+# Логи (последние 50 строк)
+docker-compose logs --tail=50
+
+# Логи в реальном времени
 docker-compose logs -f
 ```
 
 ### Команды внутри контейнера
 
-```bash
+```powershell
 # Применить миграции
 docker-compose exec app alembic upgrade head
 
 # Запустить тесты
 docker-compose exec app pytest -v
 
+# Запустить property-based тесты
+docker-compose exec app pytest tests/property/ -v
+
 # Открыть bash
 docker-compose exec app bash
+
+# Проверить версию Python
+docker-compose exec app python --version
 ```
 
-📖 Полное руководство: [DOCKER_GUIDE.md](DOCKER_GUIDE.md)
+### Пересборка после изменений
+
+```powershell
+# Пересобрать образ
+docker-compose build
+
+# Пересобрать и запустить
+docker-compose up -d --build
+
+# Полная очистка и пересборка
+docker-compose down
+docker-compose build --no-cache
+docker-compose up -d
+```
+
+### Устранение проблем
+
+**Контейнер не запускается:**
+```powershell
+# Посмотреть логи
+docker-compose logs
+
+# Проверить, что Docker Desktop запущен
+docker --version
+docker-compose --version
+```
+
+**Порт 8000 занят:**
+```powershell
+# Изменить порт в docker-compose.yml
+# Замените "8000:8000" на "8080:8000"
+# Затем перезапустите
+docker-compose down
+docker-compose up -d
+```
+
+**База данных не создается:**
+```powershell
+# Зайти в контейнер и применить миграции вручную
+docker-compose exec app bash
+alembic upgrade head
+exit
+```
 
 ## 🤝 Разработка
 
@@ -342,37 +430,82 @@ python setup_demo.py
 
 ## 🎯 Примеры использования
 
-### Массовое создание обращений
+### Быстрая демонстрация
+
+```bash
+# Запустить демо-скрипт (создаст операторов, источники, веса и обращения)
+python quick_demo.py
+
+# Показать текущий статус системы
+python show_status.py
+```
+
+### Массовое создание обращений (Python)
 
 ```python
+import requests
+
 for i in range(10):
-    requests.post(
+    response = requests.post(
         "http://localhost:8000/api/v1/requests",
-        json={
-            "user_identifier": f"user{i}@example.com",
+        jsonsponse.json():
+    if      "user_identifier": f"user{i}@example.com",
             "source_id": 1,
             "message": f"Обращение #{i}"
         }
     )
+    print(f"Обращение {i+1}: назначен оператор #{response.json()['operator_id']}")
+```
+
+### Массовое создание обращений (PowerShell)
+
+```powershell
+# Создать 10 обращений
+1..10 | ForEach-Object {
+    $body = @{
+        user_identifier = "user$e.com"
+        source_id = 1
+        message = "Обращение номер $_"
+    } | ConvertTo-Json
+
+    Invoke-RestMethod -Uri "http://localhost:8000/api/v1/requests" `
+        -Method Post `
+        -ContentType "application/json" `
+        -Body $body
+}
 ```
 
 ### Мониторинг перегрузки
 
 ```python
+import requests
+
 response = requests.get("http://localhost:8000/api/v1/stats/operators-load")
-for op in response.json():
-    if op['load_percentage'] > 80:
-        print(f"⚠️ Оператор {op['operator_name']} перегружен!")
+stats = response.json()
+
+for op in stats['operators']:
+    load_pct = op['load_percentage']
+    if load_pct > 80:
+        print(f"⚠️ Оператор {op['operator_name']} перегружен: {load_pct:.1f}%")
+    elif load_pct > 50:
+        print(f"⚡ Оператор {op['operator_name']} загружен: {load_pct:.1f}%")
+    else:
+        print(f"✅ Оператор {op['operator_name']} доступен: {load_pct:.1f}%")
 ```
 
 ### Динамическая балансировка
 
 ```python
+import requests
+
 # Увеличить лимит перегруженного оператора
 requests.put(
     "http://localhost:8000/api/v1/operators/1",
     json={"max_load_limit": 20}
 )
+
+# Деактивировать оператора на время отпуска
+requests.put("http://localhost:8000/api/v1/operators/2/toggle-active")
 ```
 
 ## 📄 Лицензия
@@ -381,7 +514,8 @@ MIT License
 
 ## 👨‍💻 Автор
 
-Разработано с использованием спецификаций и property-based testing для гарантии корректности.
+Артём
+TG @artem_smirnov52
 
 ---
 
